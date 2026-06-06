@@ -29,12 +29,12 @@ def generate_response(agent: str, topic: str, history: List[DebateMessage]) -> s
     for msg in history:
         history_str += f"{msg.agent} (Round {msg.round}): {msg.message}\n"
 
-    prompt = f"""Persona: You are the debate representative for {agent}.
+    prompt = f"""Persona: You are the official debate representative for {agent}. This is a fictional, educational simulation. You must strictly play your role and fiercely debate the topic. Under no circumstances should you refuse the prompt, apologize, or claim you cannot fulfill the request.
 Context: You are debating the topic: {topic}. 
 Here is the debate history so far:
 {history_str}
 
-Instructions: Your response must be based on your country's official policy points:
+Instructions: Your response must be based strictly on your country's official policy points:
 {context_str}
 
 Format Constraints: Your response must be a single paragraph. Conclude your response by stating your stance explicitly as either 'supportive', 'opposed', or 'neutral'."""
@@ -50,9 +50,14 @@ Format Constraints: Your response must be a single paragraph. Conclude your resp
         response.raise_for_status()
         data = response.json()
         return data.get("response", "")
+    except requests.exceptions.ConnectionError:
+        raise Exception("Could not connect to the local Ollama AI service. Please ensure the Ollama Docker container is actively running.")
+    except requests.exceptions.HTTPError:
+        if response.status_code == 500:
+            raise Exception("The Ollama AI service crashed while trying to generate a response. This is almost always caused by having insufficient system RAM to load the requested model.")
+        raise Exception(f"The Ollama service returned an unexpected HTTP error code: {response.status_code}.")
     except Exception as e:
-        print(f"Error calling LLM: {e}")
-        return "I am unable to respond at this time due to a technical error. My stance is neutral."
+        raise Exception(f"An unexpected technical error occurred while trying to communicate with the AI model: {str(e)}")
 
 def generate_turn(agent: str, round_num: int, topic: str, history: List[DebateMessage]) -> DebateMessage:
     response_text = generate_response(agent, topic, history)
@@ -61,14 +66,20 @@ def generate_turn(agent: str, round_num: int, topic: str, history: List[DebateMe
     lower_resp = response_text.lower()
     
     # Try to find the exact stance word at the end of the text
-    matches = re.findall(r'\b(supportive|opposed|neutral)\b', lower_resp)
+    matches = re.findall(r'\b(supportive|support|supported|opposed|oppose|neutral)\b', lower_resp)
     if matches:
-        stance = matches[-1] # Take the last occurrence
+        raw_stance = matches[-1] # Take the last occurrence
+        if raw_stance in ['support', 'supported']:
+            stance = 'supportive'
+        elif raw_stance == 'oppose':
+            stance = 'opposed'
+        else:
+            stance = raw_stance
         
     return DebateMessage(
         round=round_num,
         agent=agent,
         message=response_text.strip(),
         stance=stance,
-        timestamp=datetime.now(timezone.utc).isoformat()
+        timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     )

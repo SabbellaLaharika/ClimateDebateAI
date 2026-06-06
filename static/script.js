@@ -40,8 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            renderMessages(data.messages);
-            
+            loader.style.display = 'none'; // Hide spinner before animation starts
+            await renderMessages(data.messages);
+
         } catch (error) {
             showError(`Simulation failed: ${error.message}`);
         } finally {
@@ -55,41 +56,51 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMsg.style.display = 'block';
     }
 
-    function renderMessages(messages) {
+    async function renderMessages(messages) {
         if (!messages || messages.length === 0) {
             container.innerHTML = '<p class="subtitle" style="text-align:center;">No debate generated.</p>';
             return;
         }
 
-        messages.forEach((msg, index) => {
-            // Create delay for animation effect
-            setTimeout(() => {
-                const card = document.createElement('div');
-                const agentClass = msg.agent ? `agent-${msg.agent.toLowerCase()}` : '';
-                const stanceClass = msg.stance ? `stance-${msg.stance.toLowerCase()}` : '';
-                
-                // Format timestamp
-                const date = new Date(msg.timestamp);
-                const timeString = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                
-                card.className = `message-card ${agentClass}`;
-                
-                card.innerHTML = `
-                    <div class="message-header">
-                        <span class="agent-name">${msg.agent}</span>
-                        <span class="stance-badge ${stanceClass}">${msg.stance}</span>
-                    </div>
-                    <div class="message-content">
-                        ${msg.message.replace(/\n/g, '<br>')}
-                    </div>
-                    <div class="meta-info">
-                        <span>Round ${msg.round}</span>
-                        <span>${timeString}</span>
-                    </div>
-                `;
-                
-                container.appendChild(card);
-            }, index * 400); // 400ms delay between each message rendering
-        });
+        const flags = {
+            'USA': '🇺🇸',
+            'EU': '🇪🇺',
+            'China': '🇨🇳'
+        };
+
+        for (const msg of messages) {
+            const card = document.createElement('div');
+            const agentClass = msg.agent ? `agent-${msg.agent.toLowerCase()}` : '';
+            const stanceClass = msg.stance ? `stance-${msg.stance.toLowerCase()}` : '';
+            const flag = flags[msg.agent] || '';
+
+            // Format timestamp
+            const date = new Date(msg.timestamp);
+            const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            card.className = `message-card ${agentClass}`;
+
+            card.innerHTML = `
+                <div class="message-header">
+                    <span class="agent-name">${flag} ${msg.agent}</span>
+                    <span class="stance-badge ${stanceClass}">${msg.stance}</span>
+                </div>
+                <div class="message-content">
+                    ${msg.message.replace(/\n/g, '<br>')}
+                </div>
+                <div class="meta-info">
+                    <span>Round ${msg.round}</span>
+                    <span>${timeString}</span>
+                </div>
+            `;
+
+            container.appendChild(card);
+
+            // Auto-scroll to the bottom so the user tracks the conversation
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+
+            // Wait 1.5 seconds before injecting the next message
+            await new Promise(r => setTimeout(r, 1500));
+        }
     }
 });

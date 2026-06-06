@@ -7,7 +7,7 @@ CHROMA_DATA_PATH = "chroma_data"
 
 class RAGService:
     def __init__(self):
-        self.client = chromadb.PersistentClient(path=CHROMA_DATA_PATH)
+        self.client = chromadb.PersistentClient(path=CHROMA_DATA_PATH, settings=chromadb.config.Settings(anonymized_telemetry=False))
         self.embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
         self.collection = self.client.get_or_create_collection(
             name="climate_policies",
