@@ -46,7 +46,7 @@ Format Constraints: Your response must be a single paragraph. Conclude your resp
     }
     
     try:
-        response = requests.post(f"{OLLAMA_BASE_URL}/api/generate", json=payload)
+        response = requests.post(f"{OLLAMA_BASE_URL}/api/generate", json=payload, timeout=180.0)
         response.raise_for_status()
         data = response.json()
         return data.get("response", "")

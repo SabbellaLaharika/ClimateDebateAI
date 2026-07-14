@@ -13,7 +13,8 @@ class RAGService:
             name="climate_policies",
             embedding_function=self.embedding_function
         )
-        self.load_data()
+        if self.collection.count() == 0:
+            self.load_data()
 
     def load_data(self):
         policies_dir = "data/policies"
