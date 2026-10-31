@@ -11,6 +11,12 @@ This system integrates a **ChromaDB**-powered Retrieval-Augmented Generation (RA
 
 ---
 
+## 🎥 Project Demo
+
+[![Watch the project demo on YouTube](https://img.youtube.com/vi/FPgSP6NlwKo/hqdefault.jpg)](https://youtu.be/FPgSP6NlwKo)
+
+---
+
 ## 🏗️ System Architecture & Workflow
 
 The simulation is built on a decoupled, multi-layered architecture where each agent behaves as a separate debater with access to a localized policy knowledge base.
