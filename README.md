@@ -13,7 +13,7 @@ This system integrates a **ChromaDB**-powered Retrieval-Augmented Generation (RA
 
 ## 🎥 Project Demo
 
-[![Watch the project demo on YouTube](https://img.youtube.com/vi/FPgSP6NlwKo/hqdefault.jpg)](https://youtu.be/FPgSP6NlwKo)
+[![Watch the project demo on YouTube](https://img.youtube.com/vi/FPgSP6NlwKo/maxresdefault.jpg)](https://youtu.be/FPgSP6NlwKo)
 
 ---
 
